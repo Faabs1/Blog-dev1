@@ -1,7 +1,8 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../Model/userSchema");
-
+const cloudinary = require('../utils/cloudinary');
+const nodemailer = require('nodemailer');
 exports.register = async (req, res) => {
     try {
         const { username, email, password, confirmpassword, isAdmin, profilePic } = req.body;
@@ -16,6 +17,8 @@ exports.register = async (req, res) => {
             return res.status(400).json({ msg: 'Email already exists' });  
             }
     
+            console.log(req.file);
+            
             const hashPassword =await bcrypt.hash(password, 10)  //10 is the Saltround for the hashing
             //i.e the number of rounds that the password can be hashed and the standard is 10-12,
 

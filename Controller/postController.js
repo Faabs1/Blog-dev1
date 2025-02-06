@@ -1,45 +1,34 @@
 const Post = require("../Model/postSchema");
+const cloudinary = require("../utils/cloudinary");
 
 exports.createPost = async (req, res) => {
     try {
-        const { title, content, category } = req.body;
+        const { title, content, category, images } = req.body;
 
         // Upload images to Cloudinary
         const imageUrls = [];
         for (const file of req.files) {
-            const result = await cloudinary.uploader.upload_stream(
-                { folder: "blog_images" },
-                (error, result) => {
-                    if (error) {
-                        console.error("Cloudinary upload error:", error);
-                        return res.status(500).json({ error: "Image upload failed" });
-                    }
-                    imageUrls.push(result.secure_url);
-                    if (imageUrls.length === req.files.length) {
-                        savePost();
-                    }
-                }
-            ).end(file.buffer);
+        const result = await cloudinary.uploader.upload(file.path);
+        imageUrls.push(result.secure_url);
         }
+        
+        const newPost = new Post({
+            title,
+            content,
+            category,
+            images: imageUrls
+        })
+        await newPost.save();
 
-        function savePost() {
-            const newPost = new Post({
-                title,
-                content,
-                category,
-                images: imageUrls,
-                user: req.user.userId,
-            });
-
-            newPost.save()
-                .then((savedPost) => res.status(201).json(savedPost))
-                .catch((err) => res.status(500).json({ error: err.message }));
-        }
+        return res.status(200).json({message: "Post created Successfully"});
+        
     } catch (err) {
-        return res.status(500).json({message:"Internal server error" });
+        console.log(err);
+        
+        return res.status(500).json({message:'Server Error'});
     }
-};
-
+}
+           
 exports.getPostsByCategory = async (req, res) => {
     try {
         const { category } = req.params;
