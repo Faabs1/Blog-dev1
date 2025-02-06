@@ -33,7 +33,8 @@ exports.register = async (req, res) => {
             username, 
             email, 
             password: hashedPassword, 
-            isAdmin 
+            isAdmin ,
+            profilePic: result.secure_url,  //secure_url is the URL of the uploaded image in cloudinary
         });
         await newUser.save();
 
@@ -101,3 +102,5 @@ exports.login = async (req, res) => {
       return res.status(500).json({ error: err.message });
     }
 };
+
+//to view post from admin on the blog page
